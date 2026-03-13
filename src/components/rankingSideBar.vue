@@ -14,12 +14,21 @@
         >{{ p.label }}</button>
       </li>
     </ul>
+    <!-- Botón Inicio (si hay sesión iniciada) -->
+    <button
+      v-if="isAuthenticated()"
+      @click="goToHome"
+      class="w-full mt-4 px-3 py-2 bg-gray-100 font-bold text-gray-700 rounded-lg hover:bg-gray-200 transition"
+    >
+      🏠 Inicio
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuth } from '@/services/authService'
 
 const periods = [
   { value: 'all', label: 'All Time' },
@@ -29,10 +38,15 @@ const periods = [
 
 const route = useRoute()
 const router = useRouter()
+const { isAuthenticated } = useAuth()
 
 const selectedPeriod = computed(() => route.query.period || 'all')
 
 function goToPeriod(period: string) {
   router.push({ path: '/ranking', query: { period } })
+}
+
+function goToHome() {
+  router.push('/')
 }
 </script>

@@ -159,14 +159,11 @@ export default defineComponent({
         }
         
         const commentData = {
-          user_id: user.value.id,
           breed_id: props.breedId,
           primary_color: props.primaryColor,
           secondary_color: props.secondaryColor,
           text: newCommentText.value,
           image_url: imageUrl || undefined,
-          user_name: user.value.user_metadata?.name || '',
-          user_email: user.value.email || ''
         };
         
         const newComment = await commentService.createComment(commentData);
@@ -190,7 +187,7 @@ export default defineComponent({
       }
 
       try {
-        const result = await commentService.toggleCommentLike(commentId, user.value.id);
+        const result = await commentService.toggleCommentLike(commentId);
         // Busca el comentario en el array y actualiza su likes_count
         const comment = comments.value.find(c => c.id === commentId);
         if (comment && result && typeof result.newCount === 'number') {
@@ -210,7 +207,7 @@ export default defineComponent({
       }
 
       try {
-        await commentService.deleteComment(commentId, user.value.id);
+        await commentService.deleteComment(commentId);
         comments.value = comments.value.filter(c => c.id !== commentId);
       } catch (error) {
         console.error('Error deleting comment:', error);

@@ -1,3 +1,4 @@
+import { authFetch, API_URL } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
 export interface Comment {
@@ -16,7 +17,6 @@ export interface Comment {
 }
 
 export interface CreateCommentData {
-  user_id: string;
   breed_id: string;
   primary_color: string;
   secondary_color: string;
@@ -29,19 +29,19 @@ export interface UpdateCommentData {
   image_url?: string;
 }
 
-class CommentService {
-  private baseUrl = 'http://localhost:3001/api/comments';
+const BASE_URL = `${API_URL}/api/comments`;
 
+class CommentService {
   async getComments(breedId: string, primaryColor: string, secondaryColor: string): Promise<Comment[]> {
     try {
       const response = await fetch(
-        `${this.baseUrl}?breedId=${encodeURIComponent(breedId)}&primaryColor=${encodeURIComponent(primaryColor)}&secondaryColor=${encodeURIComponent(secondaryColor)}`
+        `${BASE_URL}?breedId=${encodeURIComponent(breedId)}&primaryColor=${encodeURIComponent(primaryColor)}&secondaryColor=${encodeURIComponent(secondaryColor)}`
       );
-      
+
       if (!response.ok) {
         throw new Error('Error al obtener comentarios');
       }
-      
+
       const data = await response.json();
       return data.comments || [];
     } catch (error) {
@@ -52,11 +52,9 @@ class CommentService {
 
   async createComment(commentData: CreateCommentData): Promise<Comment> {
     try {
-      const response = await fetch(this.baseUrl, {
+      // user_id y user_name ya no se envían: el backend los extrae del JWT
+      const response = await authFetch(BASE_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(commentData),
       });
 
@@ -73,17 +71,12 @@ class CommentService {
     }
   }
 
-  async updateComment(commentId: string, updateData: UpdateCommentData, userId: string): Promise<Comment> {
+  async updateComment(commentId: string, updateData: UpdateCommentData): Promise<Comment> {
     try {
-      const response = await fetch(`${this.baseUrl}/${commentId}`, {
+      // user_id ya no se envía: el backend lo extrae del JWT
+      const response = await authFetch(`${BASE_URL}/${commentId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...updateData,
-          user_id: userId,
-        }),
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
@@ -99,14 +92,11 @@ class CommentService {
     }
   }
 
-  async deleteComment(commentId: string, userId: string): Promise<void> {
+  async deleteComment(commentId: string): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/${commentId}`, {
+      // user_id ya no se envía: el backend lo extrae del JWT
+      const response = await authFetch(`${BASE_URL}/${commentId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id: userId }),
       });
 
       if (!response.ok) {
@@ -119,16 +109,11 @@ class CommentService {
     }
   }
 
-  async toggleCommentLike(commentId: string, userId: string): Promise<{ liked: boolean, newCount: number }> {
-    const response = await fetch(`${this.baseUrl}/like`, {
+  async toggleCommentLike(commentId: string): Promise<{ liked: boolean, newCount: number }> {
+    // user_id ya no se envía: el backend lo extrae del JWT
+    const response = await authFetch(`${BASE_URL}/like`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        comment_id: commentId,
-        user_id: userId,
-      }),
+      body: JSON.stringify({ comment_id: commentId }),
     });
 
     if (!response.ok) {
@@ -136,29 +121,26 @@ class CommentService {
       throw new Error(errorData.error || 'Error al dar like');
     }
 
-    const data = await response.json();
-    return data;
+    return response.json();
   }
 
-  // Función para subir imagen del comentario a Supabase Storage
+  // Subir imagen del comentario a Supabase Storage (desde el frontend con anon key)
   async uploadCommentImage(file: File): Promise<string> {
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `comment-images/${fileName}`;
 
-      const { data, error } = await supabase.storage
-        .from('image')
+      const { error } = await supabase.storage
+        .from('cat-images')
         .upload(filePath, file);
 
       if (error) {
-        console.error('Upload error:', error);
         throw new Error('Error al subir imagen: ' + error.message);
       }
 
-      // Obtener la URL pública de la imagen
       const { data: { publicUrl } } = supabase.storage
-        .from('image')
+        .from('cat-images')
         .getPublicUrl(filePath);
 
       return publicUrl;
@@ -169,4 +151,4 @@ class CommentService {
   }
 }
 
-export const commentService = new CommentService(); 
+export const commentService = new CommentService();

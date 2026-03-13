@@ -1,13 +1,7 @@
 <template>
   <div class="flex flex-col md:flex-row gap-8 max-w-5xl mx-auto py-8">
     <div class="w-full md:w-72 flex-shrink-0">
-      <ranking-side-bar
-        :vertical="true"
-        :showLinks="true"
-        :selectedPeriod="period"
-        :showTopBreeds="false"
-        @select-period="handleSelectPeriod"
-      />
+      <ranking-side-bar />
     </div>
     <div class="flex-1 bg-white rounded-xl shadow-md p-8">
       <h2 class="text-2xl font-bold text-yellow-700 mb-6 text-center">Ranking de Razas - {{ periodLabel }}</h2>
@@ -27,10 +21,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { getTopBreedsAllTime, getTopBreedsMonth, getTopBreedsWeek } from '@/services/breedService'
 import RankingSideBar from '@/components/rankingSideBar.vue'
 
-const period = ref<'all' | 'month' | 'week'>('all')
+const route = useRoute()
+
+const period = computed(() => (route.query.period as string) || 'all')
 const topBreeds = ref<any[]>([])
 
 const periodLabel = computed(() => {
@@ -54,8 +51,4 @@ const fetchRanking = async () => {
 
 onMounted(fetchRanking)
 watch(period, fetchRanking)
-
-function handleSelectPeriod(newPeriod: 'all' | 'month' | 'week') {
-  period.value = newPeriod
-}
 </script> 

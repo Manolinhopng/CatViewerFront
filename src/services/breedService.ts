@@ -1,5 +1,6 @@
 import { cats } from '@/lib/dataCats';
 import { ref } from 'vue';
+import { API_URL } from '@/lib/api';
 
 const breeds = ref(cats);
 
@@ -22,13 +23,6 @@ export function useBreedData() {
   };
 
   /**
-   * Obtener razas más populares (placeholder: primeros 5)
-   */
-  const getTopBreeds = (limit: number = 5) => {
-    return breeds.value.slice(0, limit);
-  };
-
-  /**
    * Buscar raza por combinación de colores (exacta, sin importar el orden)
    */
   const findBreedByColors = (primary: string, secondary: string) => {
@@ -42,27 +36,26 @@ export function useBreedData() {
     breeds,
     getBreedById,
     getBreedsByColors,
-    getTopBreeds,
-    findBreedByColors
+    findBreedByColors,
   };
 }
 
 export async function getBreedLikes(breedId: string) {
-  const response = await fetch(`http://localhost:3001/api/breedLikes/${breedId}`);
-  return await response.json();
+  const response = await fetch(`${API_URL}/api/breedLikes/${breedId}`);
+  return response.json();
 }
 
 export async function getTopBreedsAllTime(limit = 3) {
-  const response = await fetch(`http://localhost:3001/api/breedLikes/top?period=all&limit=${limit}`)
-  return await response.json()
+  const response = await fetch(`${API_URL}/api/breedLikes/top?period=all&limit=${limit}`);
+  return response.json();
 }
 
 export async function getTopBreedsMonth(limit = 3) {
-  const response = await fetch(`http://localhost:3001/api/breedLikes/top?period=month&limit=${limit}`)
-  return await response.json()
+  const response = await fetch(`${API_URL}/api/breedLikes/top?period=month&limit=${limit}`);
+  return response.json();
 }
 
 export async function getTopBreedsWeek(limit = 3) {
-  const response = await fetch(`http://localhost:3001/api/breedLikes/top?period=week&limit=${limit}`)
-  return await response.json()
+  const response = await fetch(`${API_URL}/api/breedLikes/top?period=week&limit=${limit}`);
+  return response.json();
 }

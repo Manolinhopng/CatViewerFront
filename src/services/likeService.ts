@@ -1,27 +1,29 @@
+import { authFetch, API_URL } from '@/lib/api';
+
 export async function getLikes(image_id: string) {
-  const response = await fetch(`http://localhost:3001/api/like/${image_id}`);
-  return await response.json();
+  const response = await fetch(`${API_URL}/api/like/${image_id}`);
+  return response.json();
 }
 
-export async function toggleLike(user_id: string, image_id: string) {
-  const response = await fetch('http://localhost:3001/api/like/toggle', {
+export async function toggleLike(image_id: string) {
+  // user_id ya no se envía: el backend lo extrae del JWT
+  const response = await authFetch(`${API_URL}/api/like/toggle`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id, image_id })
+    body: JSON.stringify({ image_id }),
   });
-  return await response.json(); // { liked: true, newCount: ... }
+  return response.json();
 }
 
 export async function getBreedLikes(breed_id: string) {
-  const response = await fetch(`http://localhost:3001/api/breedLikes/${breed_id}`);
-  return await response.json(); // { count: ... }
+  const response = await fetch(`${API_URL}/api/breedLikes/${breed_id}`);
+  return response.json();
 }
 
-export async function toggleBreedLike(user_id: string, breed_id: string) {
-  const response = await fetch('http://localhost:3001/api/breedLikes/toggle', {
+export async function toggleBreedLike(breed_id: string) {
+  // user_id ya no se envía: el backend lo extrae del JWT
+  const response = await authFetch(`${API_URL}/api/breedLikes/toggle`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id, breed_id })
+    body: JSON.stringify({ breed_id }),
   });
-  return await response.json(); // { liked: true, newCount: ... }
+  return response.json();
 }

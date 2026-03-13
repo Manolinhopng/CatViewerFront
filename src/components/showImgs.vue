@@ -3,7 +3,7 @@
   </template>
   
   <script lang="ts">
-  import { defineComponent, PropType } from 'vue'
+  import { defineComponent, PropType, computed } from 'vue'
   import { supabase } from '@/lib/supabase'
   
   export default defineComponent({

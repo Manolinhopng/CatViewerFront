@@ -6,5 +6,5 @@ export interface Breed {
     primaryColors: string[];
     secondaryColors: string[];
     image: string;
-    likes?: number; // Para el ranking
+    likes?: number;
   }

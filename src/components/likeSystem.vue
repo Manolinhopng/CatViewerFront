@@ -1,6 +1,6 @@
 <template>
     <div class="like-system">
-      <button @click="toggleLike" :class="{ 'liked': isLiked }">
+      <button @click="toggleLike" :class="{ 'liked': isLiked }" class="like-button">
         🐾 {{ likeCount }} Likes
       </button>
     </div>
@@ -8,16 +8,12 @@
   
   <script lang="ts">
   import { defineComponent, ref, onMounted } from 'vue';
-  import { getLikes, toggleLike as toggleLikeService } from '@/services/likeService';
+  import { getBreedLikes, toggleBreedLike } from '@/services/likeService';
   
   export default defineComponent({
     name: 'LikeSystem',
     props: {
       breedId: {
-        type: String,
-        required: true
-      },
-      userId: {
         type: String,
         required: true
       }
@@ -27,20 +23,45 @@
       const likeCount = ref(0);
   
       const toggleLike = async () => {
-        const result = await toggleLikeService(props.userId, props.breedId);
-        if (result) {
-          isLiked.value = !isLiked.value;
-          likeCount.value = result.newCount;
+        try {
+          const result = await toggleBreedLike(props.breedId);
+          if (result && result.newCount !== undefined) {
+            isLiked.value = !isLiked.value;
+            likeCount.value = result.newCount;
+          }
+        } catch (error) {
+          console.error("Error al dar like:", error);
         }
       };
   
       onMounted(async () => {
-        const result = await getLikes(props.breedId);
-        likeCount.value = result.count;
-        // Aquí podrías consultar si el usuario ya dio like, si tienes ese endpoint
+        try {
+          const result = await getBreedLikes(props.breedId);
+          if (result && result.count !== undefined) {
+            likeCount.value = result.count;
+          }
+        } catch (error) {
+          console.error("Error al obtener likes:", error);
+        }
       });
   
       return { isLiked, likeCount, toggleLike };
     }
   });
   </script>
+
+  <style scoped>
+  .like-button {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 5px 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .like-button.liked {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+  </style>
